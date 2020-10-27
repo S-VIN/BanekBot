@@ -4,26 +4,24 @@ import (
 	"fmt"
 	"github.com/gocolly/colly"
 	"strconv"
+	"time"
 )
 
 func main() {
+	t0 := time.Now()
 
 	for i := 1; i < 1143; i++ {
-		c := colly.NewCollector(
-			// Visit only domains: hackerspaces.org, wiki.hackerspaces.org
-			colly.AllowedDomains("baneks.ru"),
-		)
+		c := colly.NewCollector()
 
-		// On every a element which has href attribute call callback
 		c.OnHTML("article", func(e *colly.HTMLElement) {
-			fmt.Println(e.Text)
-		})
-
-		// Before making a request print "Visiting ..."
-		c.OnRequest(func(r *colly.Request) {
-
+			//fmt.Println(e.Text)
 		})
 
 		c.Visit("https://baneks.ru/" + strconv.Itoa(i))
+
 	}
+
+	t1 := time.Now()
+	fmt.Println(t1.Sub(t0))
+
 }
