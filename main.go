@@ -15,7 +15,6 @@ func getAnec(index int) string {
 	c := colly.NewCollector()
 
 	c.OnHTML("article", func(e *colly.HTMLElement) {
-		//fmt.Println(e.Text)
 		output = e.Text
 	})
 
@@ -27,11 +26,7 @@ func getAnec(index int) string {
 func main() {
 	t0 := time.Now()
 
-	//for i := 1; i < 1143; i++ {
-	//	fmt.Println(getAnec(i))
-	//}
-
-	bot, err := tgbotapi.NewBotAPI("1134594213:AAFJaUZZCGnFdRANSBIfgF0YJBn-VJS9nTc")
+	bot, err := tgbotapi.NewBotAPI("1356963581:AAGPlUyAkofdhcehODZ-jvIv9Qu9T196pRQ")
 	if err != nil {
 		log.Panic(err)
 	}
@@ -47,9 +42,21 @@ func main() {
 			continue
 		}
 
-		//msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
 
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, getAnec(rand.Intn(1142))))
+		var number, err = strconv.Atoi(msg.Text)
+		if err == nil {
+			if number < 1 || number > 1141 {
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Такого анекдота нет. Есть только 1-1142. Случайный Анекдот:"))
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, getAnec(rand.Intn(1142))))
+			} else {
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, getAnec(number)))
+			}
+		} else {
+			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Такого анекдота нет. Есть только 1-1142. Случайный Анекдот:"))
+			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, getAnec(rand.Intn(1142))))
+		}
+
 	}
 
 	t1 := time.Now()
