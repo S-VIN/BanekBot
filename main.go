@@ -1,16 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/gocolly/colly"
-	"log"
+	"context"
 	"math/rand"
 	"strconv"
-	"time"
+
+	//"fmt"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/gocolly/colly"
+	"github.com/jackc/pgx"
 )
 
-func getAnec(index int) string {
+func getAnecFromInternet(index int) string {
 	var output string
 	c := colly.NewCollector()
 
@@ -23,19 +24,29 @@ func getAnec(index int) string {
 	return output
 }
 
-func main() {
-	t0 := time.Now()
-
-	bot, err := tgbotapi.NewBotAPI("1356963581:AAGPlUyAkofdhcehODZ-jvIv9Qu9T196pRQ")
+func getAnecFromDatabase(index int, conn *pgx.Conn) string {
+	var number int
+	var anek string
+	//_, err = conn.Exec(context.Background(), "INSERT INTO aneks(number, anek)VALUES ("+ strconv.Itoa(i) + ", '" + text + "');" )
+	err := conn.QueryRow(context.Background(), "select number, anek from aneks where number="+strconv.Itoa(index)+";").Scan(&number, &anek)
 	if err != nil {
-		log.Panic(err)
-	}
 
+	}
+	return anek
+}
+
+func main() {
+
+	conn, _ := pgx.Connect(context.Background(), "user=stepan password= host=localhost port=5432 dbname=stepan sslmode=verify-ca")
+	defer conn.Close(context.Background())
+	bot, _ := tgbotapi.NewBotAPI("1134594213:AAFJaUZZCGnFdRANSBIfgF0YJBn-VJS9nTc")
 	bot.Debug = false
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	updates, err := bot.GetUpdatesChan(u)
+	//fmt.Println(getAnecFromDatabase(50, conn))
+
+	updates, _ := bot.GetUpdatesChan(u)
 
 	for update := range updates {
 		if update.Message == nil { // ignore any non-Message Updates
@@ -46,20 +57,16 @@ func main() {
 
 		var number, err = strconv.Atoi(msg.Text)
 		if err == nil {
-			if number < 1 || number > 1141 {
+			if number < -2 || number > 1142 {
 				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Такого анекдота нет. Есть только 1-1142. Случайный Анекдот:"))
-				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, getAnec(rand.Intn(1142))))
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, getAnecFromDatabase(rand.Intn(1142), conn)))
 			} else {
-				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, getAnec(number)))
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, getAnecFromDatabase(number, conn)))
 			}
 		} else {
 			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Такого анекдота нет. Есть только 1-1142. Случайный Анекдот:"))
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, getAnec(rand.Intn(1142))))
+			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, getAnecFromDatabase(rand.Intn(1142), conn)))
 		}
 
 	}
-
-	t1 := time.Now()
-	fmt.Println(t1.Sub(t0))
-
 }
