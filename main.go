@@ -9,5 +9,8 @@ import (
 
 
 func main() {
-	
+	CreateBot()
+	//for {
+	//	CheckUpdates()
+	//}
 }
