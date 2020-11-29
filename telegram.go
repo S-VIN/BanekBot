@@ -24,11 +24,15 @@ func CreateBot() (err error){
 	return nil
 }
 
+func SendMessage(chatID int64, input string) error{
+	mes, err := Bot.Send(tgbotapi.NewMessage(chatID, input))
+	fmt.Println(mes)
+	return err
+}
+
 
 func CheckUpdates() error {
-	var updates[] tgbotapi.Update
-	var err error
-	updates, err = Bot.GetUpdatesChan(BotConfig)
+	updates, err := Bot.GetUpdatesChan(BotConfig)
 	if err != nil{
 		return err
 	}
@@ -41,8 +45,4 @@ func CheckUpdates() error {
 	return nil
 }
 
-func SendMessage(chatID int64, input string) error{
-	mes, err := Bot.Send(tgbotapi.NewMessage(chatID, input))
-	fmt.Println(mes)
-	return err
-}
+
