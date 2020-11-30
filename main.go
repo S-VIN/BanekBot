@@ -1,16 +1,19 @@
 package main
 
-import (
-	//"context"
-	//"math/rand"
-	//"strconv"
-	//"fmt"
-)
+import "fmt"
+
 
 
 func main() {
-	CreateBot()
-	
-		CheckUpdates()
+
+database.Setup()
+
+	err := telegram.CreateBot()
+	if err != nil{
+		fmt.Println(err)
+	}
+	telegram.CheckUpdates()
+
+
 
 }
