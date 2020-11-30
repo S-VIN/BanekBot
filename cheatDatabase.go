@@ -27,6 +27,14 @@ func (database Database) Get(id int) Anek{
 	return database.arrayOfAneks[id]
 }
 
+func (database *Database) Like(id int) {
+	database.arrayOfAneks[id].Likes++
+}
+
+func (database *Database) Dislike(id int) {
+	database.arrayOfAneks[id].Dislikes++
+}
+
 func (database *Database) Setup() (err error){	
 	for i := 0; i < 10; i++ {
 		text, err := getAnecFromInternet(i)

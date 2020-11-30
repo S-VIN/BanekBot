@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
 	"strconv"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -23,19 +23,11 @@ var replyKeyboard = tgbotapi.NewReplyKeyboard(
 	),	
 )
 
-var likesKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("👍🏻","like"),
-		tgbotapi.NewInlineKeyboardButtonData("👎🏾","dislike"),
-	),
-)
 
 type Telegram struct{
 	bot *tgbotapi.BotAPI
 	botConfig tgbotapi.UpdateConfig
-	
 }
-
 
 func (t *Telegram)CreateBot() (err error) {
 	t.bot, err = tgbotapi.NewBotAPI("1241791463:AAGTnqHu_2CMhPFAYTBloCr0tgriOTCHt0M")
@@ -52,19 +44,44 @@ func (t Telegram)SendMessage(chatID int64, input string) error {
 	return err
 }
 
-func (t Telegram)SendMessageWithReply(chatID int64, k tgbotapi.ReplyKeyboardMarkup, ) error {
+func (t Telegram)SendReplyKeyboard(chatID int64) error {
 	msg := tgbotapi.NewMessage(chatID, "Чтобы было проще хихикать, пользуйся клавиатурой.")
-	msg.ReplyMarkup = k
+	msg.ReplyMarkup = replyKeyboard
 	_, err := t.bot.Send(msg)
 	return err
 }
 
+func (t Telegram)SendAnek(chatID int64, id int) error{
+	if id < 0 || id > len(database.arrayOfAneks){
+		return nil
+	}
+	
+	var likesKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData(strconv.Itoa(database.Get(id).Likes) + " 👍🏻",  "l" + strconv.Itoa(id)),
+			tgbotapi.NewInlineKeyboardButtonData(strconv.Itoa(database.Get(id).Dislikes) + " 👎🏾", "d" + strconv.Itoa(id)),
+		),
+	)
 
-func (t Telegram)SendMessageWithInline(chatID int64) error {
-	msg := tgbotapi.NewMessage(chatID, "Чтобы было проще хихикать, пользуйся клавиатурой.")
-	msg.ReplyMarkup = inKeyboard
+	msg := tgbotapi.NewMessage(chatID, database.Get(id).Text)
+	msg.ReplyMarkup = likesKeyboard
 	_, err := t.bot.Send(msg)
 	return err
+}
+
+func (t *Telegram)UpdateLikes(input string){
+	var like bool
+	if input[0] == 'l'{
+		like = true
+	} else{
+		like = false
+	}
+	temp, _ := strconv.Atoi(input[1:len(input)])  
+	if like{
+		database.Like(temp)
+	}else{
+		database.Dislike(temp)
+	}
 }
 
 func (t Telegram)CheckUpdates() error {
@@ -72,7 +89,15 @@ func (t Telegram)CheckUpdates() error {
 	if err != nil {
 		return err
 	}
+	
 	for update := range updates {
+		if update.CallbackQuery != nil{
+			t.bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Молодец!"))
+			//t.bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data))
+			t.UpdateLikes(update.CallbackQuery.Data)
+		
+		}
+
 		if update.Message == nil {
 			continue
 		}
@@ -83,18 +108,14 @@ func (t Telegram)CheckUpdates() error {
 
 func (t Telegram)CreateAnswer(input tgbotapi.Message) error {
 	i, err := strconv.Atoi(input.Text)
-	fmt.Println(input.Text)
-	temp := database.Get(i)
+	
 	if input.Text == "/start"{
-		t.SendKeyboard(input.Chat.ID, numericKeyboard)
-		fmt.Println("key")
+		t.SendReplyKeyboard(input.Chat.ID)
 	}
-	if input.Text == "t"{
-		t.SendSpecial(input.Chat.ID)
-		fmt.Println("key")
-	}
+	
 	if err == nil {
-		t.SendMessage(input.Chat.ID, temp.Text)
+		t.SendAnek(input.Chat.ID, i)
 	}
+	
 	return err
 }
