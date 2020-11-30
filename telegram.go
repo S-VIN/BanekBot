@@ -2,6 +2,7 @@ package main
 
 import (
 	//"fmt"
+	"math/rand"
 	"strconv"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -69,19 +70,17 @@ func (t Telegram)SendAnek(chatID int64, id int) error{
 	return err
 }
 
-func (t *Telegram)UpdateLikes(input string){
-	var like bool
-	if input[0] == 'l'{
-		like = true
-	} else{
-		like = false
-	}
-	temp, _ := strconv.Atoi(input[1:len(input)])  
-	if like{
+func (t *Telegram)GetResponseFromInline(input string, id uint64){
+	temp, _ := strconv.Atoi(input[1:len(input)])
+	switch os := input[0]; os {
+	case "l":
 		database.Like(temp)
-	}else{
+	case "d":
 		database.Dislike(temp)
-	}
+	case "f":
+		chatsDatabase[id].favourites
+
+}
 }
 
 func (t Telegram)CheckUpdates() error {
@@ -89,13 +88,12 @@ func (t Telegram)CheckUpdates() error {
 	if err != nil {
 		return err
 	}
-	
+
 	for update := range updates {
 		if update.CallbackQuery != nil{
-			t.bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Молодец!"))
+			t.bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Молодец! Твой палец записан, куда надо."))
 			//t.bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data))
-			t.UpdateLikes(update.CallbackQuery.Data)
-		
+			t.GetResponseFromInline(update.CallbackQuery.Data)
 		}
 
 		if update.Message == nil {
@@ -113,6 +111,10 @@ func (t Telegram)CreateAnswer(input tgbotapi.Message) error {
 		t.SendReplyKeyboard(input.Chat.ID)
 	}
 	
+	if input.Text == "СЛУЧАЙНЫЙ АНЕК"{
+		t.SendAnek(input.Chat.ID, rand.Intn(10))
+	}
+
 	if err == nil {
 		t.SendAnek(input.Chat.ID, i)
 	}

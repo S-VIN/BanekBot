@@ -16,6 +16,13 @@ type Database struct{
 	arrayOfAneks []Anek
 }
 
+type chat struct{
+	favorites []int
+}
+
+var chatsDatabase map[uint64]chat
+
+
 func (database *Database) Add(inputAnek Anek) {
 	database.arrayOfAneks = append(database.arrayOfAneks, inputAnek)
 }
