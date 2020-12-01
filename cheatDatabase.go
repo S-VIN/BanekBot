@@ -12,9 +12,9 @@ type Anek struct {
   }
 
 type chat struct{
-	favourite map[int]bool
-	likes map[int]bool
-	dislikes map[int]bool
+	Favourite map[int]bool
+	Likes map[int]bool
+	Dislikes map[int]bool
 }
 
 type Database struct{
@@ -23,29 +23,29 @@ type Database struct{
 }
 
 func (database * Database) Like(chatID uint64, anekNumber int){
-	database.chats[chatID].likes[anekNumber] = true
+	database.chats[chatID].Likes[anekNumber] = true
 	database.arrayOfAneks[anekNumber].Likes++
 }
 
 func (database * Database) Dislike(chatID uint64, anekNumber int){
-	database.chats[chatID].dislikes[anekNumber] = true
+	database.chats[chatID].Dislikes[anekNumber] = true
 	database.arrayOfAneks[anekNumber].Dislikes++
 }
 
 func (database * Database) AddToFavourite(chatID uint64, anekNumber int){
-	database.chats[chatID].favourite[anekNumber] = true
+	database.chats[chatID].Favourite[anekNumber] = true
 }
 
 func (database Database) IsFavourite(chatID uint64, anekNumber int) bool{
-	return database.chats[chatID].favourite[anekNumber]
+	return database.chats[chatID].Favourite[anekNumber]
 }
 
 func (database Database) IsLike(chatID uint64, anekNumber int) bool{
-	return database.chats[chatID].likes[anekNumber]
+	return database.chats[chatID].Likes[anekNumber]
 }
 
 func (database Database) IsDislike(chatID uint64, anekNumber int) bool{
-	return database.chats[chatID].dislikes[anekNumber]
+	return database.chats[chatID].Dislikes[anekNumber]
 }
 
 func (database *Database) Add(inputAnek Anek) {
@@ -68,6 +68,10 @@ func (database *Database) Setup() (err error){
 		database.Add(Anek{Text: text })
 	}
 	return err
+}
+
+func (database Database) GetChat(chatID uint64) chat{
+	return database.chats[chatID]
 }
 
 /*func (database Database) GetLikedAnek() Anek{

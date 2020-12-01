@@ -4,7 +4,7 @@ import (
 	//"fmt"
 	"math/rand"
 	"strconv"
-
+	//"strings"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
@@ -145,8 +145,23 @@ func (t Telegram) CreateAnswer(input tgbotapi.Message) error {
 		t.SendMessage(input.Chat.ID, "Несмешных анеков нет. Смейся, любитель похохотать.")
 
 	case "СЛУЧАЙНЫЙ ИЗБРАННЫЙ АНЕК":
-		t.SendAnek(input.Chat.ID, rand.Intn(len(database.chats[uint64(input.Chat.ID)].favourite)))
+		t.SendAnek(input.Chat.ID, rand.Intn(10))
+
+	case "СПИСОК ИЗБРАННЫХ АНЕКОВ":
+		var temp string
+
+		chat := database.GetChat(input.Chat.ID)
+		
+		for i:=0; i < len(chat.Favourite); i++{
+			temp += string(chat.Favourite[i])
+			temp += " "
+		} 
+		
+		
+		t.SendMessage(input.Chat.ID, temp)
 	}
+
+
 	if err == nil {
 		t.SendAnek(input.Chat.ID, i)
 	}
