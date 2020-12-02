@@ -72,7 +72,7 @@ func (t Telegram) SendAnek(chatID int64, id int) error {
 	return err
 }
 
-func (t *Telegram) GetResponseFromInline(input string, chatID uint64) {
+func (t *Telegram) GetResponseFromInline(input string, chatID int64) {
 	temp, _ := strconv.Atoi(input[1:len(input)])
 	switch os := input[0]; os {
 	case 'l':
@@ -121,46 +121,35 @@ func (t Telegram) CreateAnswer(input tgbotapi.Message) error {
 	i, err := strconv.Atoi(input.Text)
 
 	switch input.Text {
+	
 	case "/start":
 		t.SendReplyKeyboard(input.Chat.ID)
+	
 	case "СЛУЧАЙНЫЙ АНЕК":
 		t.SendAnek(input.Chat.ID, rand.Intn(10))
+	
 	case "СЛУЧАЙНЫЙ СМЕШНОЙ АНЕК":
-		for i := 0; i < len(database.arrayOfAneks); i++ {
-			temp := database.arrayOfAneks[rand.Intn(10)]
-			if temp.Likes > temp.Dislikes {
-				t.SendAnek(input.Chat.ID, i)
-				return nil
-			}
+		_, index := database.GetLikedAnek()
+		if index == 0 {
+			t.SendMessage(input.Chat.ID, "Смешных анеков нет. Можешь посмотреть в зеркало.")
+		}else{
+			t.SendAnek(input.chat.ID, index)
 		}
-		t.SendMessage(input.Chat.ID, "Смешных анеков нет. Можешь посмотреть в зеркало.")
+
 	case "СЛУЧАЙНЫЙ НЕСМЕШНОЙ АНЕК":
-		for i := 0; i < len(database.arrayOfAneks); i++ {
-			temp := database.arrayOfAneks[rand.Intn(10)]
-			if temp.Likes < temp.Dislikes {
-				t.SendAnek(input.Chat.ID, i)
-				return nil
-			}
+		_, index := database.GetDislikedAnek()
+		if index == 0 {
+			t.SendMessage(input.Chat.ID, "Несмешных анеков нет. Смейся, любитель похохотать.")
+		}else{
+			t.SendAnek(input.chat.ID, index)
 		}
-		t.SendMessage(input.Chat.ID, "Несмешных анеков нет. Смейся, любитель похохотать.")
 
 	case "СЛУЧАЙНЫЙ ИЗБРАННЫЙ АНЕК":
 		t.SendAnek(input.Chat.ID, rand.Intn(10))
 
 	case "СПИСОК ИЗБРАННЫХ АНЕКОВ":
-		var temp string
-
-		chat := database.GetChat(input.Chat.ID)
-		
-		for i:=0; i < len(chat.Favourite); i++{
-			temp += string(chat.Favourite[i])
-			temp += " "
-		} 
-		
-		
-		t.SendMessage(input.Chat.ID, temp)
+		t.SendMessage(input.Chat.ID, database.GetStringOfFavourites(input.Chat.ID))
 	}
-
 
 	if err == nil {
 		t.SendAnek(input.Chat.ID, i)

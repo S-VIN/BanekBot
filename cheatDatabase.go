@@ -1,7 +1,8 @@
 package main
 
 //import "fmt"
-
+import "math/rand"
+import "strconv"
 var database Database
 
 type Anek struct {
@@ -19,7 +20,7 @@ type chat struct{
 
 type Database struct{
 	arrayOfAneks []Anek
-	chats map[uint64] chat
+	chats map[int64] chat
 }
 
 func (database * Database) Like(chatID uint64, anekNumber int){
@@ -74,15 +75,35 @@ func (database Database) GetChat(chatID uint64) chat{
 	return database.chats[chatID]
 }
 
-/*func (database Database) GetLikedAnek() Anek{
+func (database Database) GetLikedAnek() (Anek, int){
 	//i know that sometimes it does not get liked anek
 	//it is feature, not bug
 	for i:=0; i < len(database.arrayOfAneks) ; i++{
 		temp := database.Get(rand.Intn(len(database.arrayOfAneks)))
 		if temp.Likes > temp.Dislikes{
-			return temp
+			return temp, i
 		}
 	}
-	return Anek{}
-}*/
+	return Anek{}, 0
+}
 
+func (database Database) GetDislikedAnek() (Anek, int){
+	//i know that sometimes it does not get liked anek
+	//it is feature, not bug
+	for i:=0; i < len(database.arrayOfAneks) ; i++{
+		temp := database.Get(rand.Intn(len(database.arrayOfAneks)))
+		if temp.Likes < temp.Dislikes{
+			return temp, i
+		}
+	}
+	return Anek{}, 0
+}
+
+func (database Database) GetStringOfFavourites(chatID uint64) (string){
+	var result string
+	for k, _ := range database.chats[chatID].Favourite{
+		result += strconv.Itoa(k)
+		result += " "
+	}
+	return result
+}
