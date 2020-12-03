@@ -13,9 +13,16 @@ type Anek struct {
   }
 
 type chat struct{
-	Favourite map[int]bool
-	Likes map[int]bool
-	Dislikes map[int]bool
+	favourites map[int]bool
+	likes map[int]bool
+	dislikes map[int]bool
+}
+
+func NewChat() *chat{
+	f := make(map[int]bool)
+	l := make(map[int]bool)
+	d := make(map[int]bool)
+	return &chat{f, l, d}
 }
 
 type Database struct{
@@ -23,30 +30,35 @@ type Database struct{
 	chats map[int64] chat
 }
 
-func (database * Database) Like(chatID uint64, anekNumber int){
-	database.chats[chatID].Likes[anekNumber] = true
+func NewDatabase() *Database{
+	result := make(map[int64] chat)
+	return &Database{result}
+}
+
+func (database * Database) Like(chatID int64, anekNumber int){
+	database.chats[chatID].likes[anekNumber] = true
 	database.arrayOfAneks[anekNumber].Likes++
 }
 
-func (database * Database) Dislike(chatID uint64, anekNumber int){
-	database.chats[chatID].Dislikes[anekNumber] = true
+func (database * Database) Dislike(chatID int64, anekNumber int){
+	database.chats[chatID].dislikes[anekNumber] = true
 	database.arrayOfAneks[anekNumber].Dislikes++
 }
 
-func (database * Database) AddToFavourite(chatID uint64, anekNumber int){
-	database.chats[chatID].Favourite[anekNumber] = true
+func (database * Database) AddToFavourites(chatID int64, anekNumber int){
+	database.chats[chatID].favourites[anekNumber] = true
 }
 
-func (database Database) IsFavourite(chatID uint64, anekNumber int) bool{
-	return database.chats[chatID].Favourite[anekNumber]
+func (database Database) IsFavourite(chatID int64, anekNumber int) bool{
+	return database.chats[chatID].favourites[anekNumber]
 }
 
-func (database Database) IsLike(chatID uint64, anekNumber int) bool{
-	return database.chats[chatID].Likes[anekNumber]
+func (database Database) IsLike(chatID int64, anekNumber int) bool{
+	return database.chats[chatID].likes[anekNumber]
 }
 
-func (database Database) IsDislike(chatID uint64, anekNumber int) bool{
-	return database.chats[chatID].Dislikes[anekNumber]
+func (database Database) IsDislike(chatID int64, anekNumber int) bool{
+	return database.chats[chatID].dislikes[anekNumber]
 }
 
 func (database *Database) Add(inputAnek Anek) {
@@ -71,7 +83,7 @@ func (database *Database) Setup() (err error){
 	return err
 }
 
-func (database Database) GetChat(chatID uint64) chat{
+func (database Database) GetChat(chatID int64) chat{
 	return database.chats[chatID]
 }
 
@@ -99,9 +111,9 @@ func (database Database) GetDislikedAnek() (Anek, int){
 	return Anek{}, 0
 }
 
-func (database Database) GetStringOfFavourites(chatID uint64) (string){
+func (database Database) GetStringOfFavourites(chatID int64) (string){
 	var result string
-	for k, _ := range database.chats[chatID].Favourite{
+	for k, _ := range database.chats[chatID].favourites{
 		result += strconv.Itoa(k)
 		result += " "
 	}

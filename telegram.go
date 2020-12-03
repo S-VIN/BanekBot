@@ -72,26 +72,26 @@ func (t Telegram) SendAnek(chatID int64, id int) error {
 	return err
 }
 
-func (t *Telegram) GetResponseFromInline(input string, chatID int64) {
+func (t *Telegram) GetResponseFromInline(chatID int64, input string, callbackQuerryID string) {
 	temp, _ := strconv.Atoi(input[1:len(input)])
 	switch os := input[0]; os {
 	case 'l':
 		if !database.IsLike(chatID, temp) {
 			database.Like(chatID, temp)
 		} else {
-			//t.bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Ну ты и шалун! Любишь шалить! Лайк то ты уже поставил."))
+			t.bot.AnswerCallbackQuery(tgbotapi.NewCallback(callbackQuerryID, "Ну ты и шалун! Любишь шалить! Лайк то ты уже поставил."))
 		}
 	case 'd':
 		if !database.IsDislike(chatID, temp) {
 			database.Dislike(chatID, temp)
 		} else {
-			//t.bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Наверное у тебя сахар повышен, раз тебя так разозлил этот анек. Дизлайк уже стоял."))
+			t.bot.AnswerCallbackQuery(tgbotapi.NewCallback(callbackQuerryID, "Наверное у тебя сахар повышен, раз тебя так разозлил этот анек. Дизлайк уже стоял."))
 		}
 	case 'f':
 		if !database.IsFavourite(chatID, temp) {
-			database.AddToFavourite(chatID, temp)
+			database.AddToFavourites(chatID, temp)
 		} else {
-			//t.bot.AnswerCallbackQuery(tgbotapi.NewCallback(chatID, "Анек не смешной, а ты его второй раз в избранное добавляешь."))
+			t.bot.AnswerCallbackQuery(tgbotapi.NewCallback(callbackQuerryID, "Анек не смешной, а ты его второй раз в избранное добавляешь."))
 		}
 	}
 }
@@ -105,8 +105,8 @@ func (t Telegram) CheckUpdates() error {
 	for update := range updates {
 		if update.CallbackQuery != nil {
 			t.bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Молодец! Твой палец записан, куда надо."))
-			t.bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data))
-			//t.GetResponseFromInline(update.CallbackQuery.Data, update.)
+			//t.bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data))
+			t.GetResponseFromInline(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data, update.CallbackQuery.ID)
 		}
 
 		if update.Message == nil {
@@ -133,7 +133,7 @@ func (t Telegram) CreateAnswer(input tgbotapi.Message) error {
 		if index == 0 {
 			t.SendMessage(input.Chat.ID, "Смешных анеков нет. Можешь посмотреть в зеркало.")
 		}else{
-			t.SendAnek(input.chat.ID, index)
+			t.SendAnek(input.Chat.ID, index)
 		}
 
 	case "СЛУЧАЙНЫЙ НЕСМЕШНОЙ АНЕК":
@@ -141,14 +141,17 @@ func (t Telegram) CreateAnswer(input tgbotapi.Message) error {
 		if index == 0 {
 			t.SendMessage(input.Chat.ID, "Несмешных анеков нет. Смейся, любитель похохотать.")
 		}else{
-			t.SendAnek(input.chat.ID, index)
+			t.SendAnek(input.Chat.ID, index)
 		}
 
 	case "СЛУЧАЙНЫЙ ИЗБРАННЫЙ АНЕК":
-		t.SendAnek(input.Chat.ID, rand.Intn(10))
+		
 
 	case "СПИСОК ИЗБРАННЫХ АНЕКОВ":
 		t.SendMessage(input.Chat.ID, database.GetStringOfFavourites(input.Chat.ID))
+	
+	default :
+		t.SendMessage(input.Chat.ID, "Ты что, дурачок? Нажимай на кнопки, либо пиши число.")
 	}
 
 	if err == nil {
