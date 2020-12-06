@@ -104,9 +104,7 @@ func (t Telegram) CheckUpdates() error {
 
 	for update := range updates {
 		if update.CallbackQuery != nil {
-			//t.bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data))
 			t.GetResponseFromInline(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data, update.CallbackQuery.ID)
-
 			t.bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Молодец! Твой палец записан, куда надо."))
 		}
 
@@ -161,10 +159,10 @@ func (t Telegram) CreateAnswer(input tgbotapi.Message){
 	
 	default :
 		i, err := strconv.Atoi(input.Text)
-		if err == nil{
+		if err == nil && i >= 0 && i < anekQuantity{
 			t.SendAnek(input.Chat.ID, i)
 		}else{
-			t.SendMessage(input.Chat.ID, "Ты что, дурачок? Нажимай на кнопки, либо пиши число.")
+			t.SendMessage(input.Chat.ID, "Ты что, дурачок? Нажимай на кнопки, либо пиши число. Число должно быть правильным, а не как обычно.")
 		}
 	}
 }

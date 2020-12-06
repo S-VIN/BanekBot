@@ -4,7 +4,7 @@ package main
 import "math/rand"
 import "strconv"
 
-const anekQuantity = 10
+const anekQuantity = 1023
 
 type Database struct{
 	arrayOfAneks [anekQuantity]anek
@@ -25,51 +25,57 @@ func (database Database) GetAnekText(id int) string{
 	return database.arrayOfAneks[id].text
 }
 
+func (database Database)GetRandomAnek() (string, int){
+	index := rand.Intn(len(database.arrayOfAneks))
+	return database.GetAnekText(index), index
+}
+
 func (database Database)GetRandomLikedAnek(chatID int64) (string, int){
 	var arrayLikedAnek []string
-	for _, item := range(database.arrayOfAneks){
+	var arrayLikedAnekIndex []int
+	for i, item := range(database.arrayOfAneks){
 		if item.IsLike(chatID){
 			arrayLikedAnek = append(arrayLikedAnek, item.text)
+			arrayLikedAnekIndex = append(arrayLikedAnekIndex, i)
 		}
 	}
 	if len(arrayLikedAnek) == 0{
 		return "", 0
 	}
 	index := rand.Intn(len(arrayLikedAnek))
-	return arrayLikedAnek[index], index
-}
-
-func (database Database)GetRandomAnek() (string, int){
-	index := rand.Intn(len(database.arrayOfAneks))
-	return database.GetAnekText(index), index
+	return arrayLikedAnek[index], arrayLikedAnekIndex[index]
 }
 
 func (database Database)GetRandomDislikedAnek(chatID int64) (string, int){
 	var arrayDislikeAnek []string
-	for _, item := range(database.arrayOfAneks){
+	var arrayDislikedAnekIndex []int
+	for i, item := range(database.arrayOfAneks){
 		if item.IsDislike(chatID){
 			arrayDislikeAnek = append(arrayDislikeAnek, item.text)
+			arrayDislikedAnekIndex = append(arrayDislikedAnekIndex, i)
 		}
 	}
 	if len(arrayDislikeAnek) == 0{
 		return "", 0
 	}
 	index := rand.Intn(len(arrayDislikeAnek))
-	return arrayDislikeAnek[index], index 
+	return arrayDislikeAnek[index], arrayDislikedAnekIndex[index]
 }
 
 func (database Database)GetRandomFavouriteAnek(chatID int64) (string, int){
 	var arrayFavouriteAnek []string
-	for _, item := range(database.arrayOfAneks){
+	var arrayFavouriteAnekIndex []int
+	for i, item := range(database.arrayOfAneks){
 		if item.IsFavorite(chatID){
 			arrayFavouriteAnek = append(arrayFavouriteAnek, item.text)
+			arrayFavouriteAnekIndex = append(arrayFavouriteAnekIndex, i)
 		}
 	}
 	if len(arrayFavouriteAnek) == 0{
 		return "", 0
 	}
 	index := rand.Intn(len(arrayFavouriteAnek))
-	return arrayFavouriteAnek[index], index
+	return arrayFavouriteAnek[index], arrayFavouriteAnekIndex[index]
 }
 
 func (database Database) GetStringOfFavourites(chatID int64) (string){

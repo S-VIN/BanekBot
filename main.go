@@ -13,7 +13,4 @@ func main() {
 		fmt.Println(err)
 	}
 	telegram.CheckUpdates()
-
-
-
 }
