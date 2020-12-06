@@ -2,9 +2,11 @@ package main
 
 import "fmt"
 
+var database Database
+
 func main() {
 
-database.Setup()
+	database = *NewDatabase()
 
 	err := telegram.CreateBot()
 	if err != nil{
@@ -12,11 +14,6 @@ database.Setup()
 	}
 	telegram.CheckUpdates()
 
-
-d := NewDatabase()
-d.chats[4] = NewChat()
-d.chats[4].favourites[3] = true
-fmt.Println(d.chats[4].favourites[3])
 
 
 }

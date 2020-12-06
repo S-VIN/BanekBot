@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 func IsInSlice(a []int64, x int64) bool {
     for _, n := range a {
         if x == n {
@@ -43,7 +41,7 @@ func (a *anek) AddLike(chatID int64){
 	a.allLikes++
 }
 
-func (a *anek) AddDislikes(chatID int64){
+func (a *anek) AddDislike(chatID int64){
 	if IsInSlice(a.dislike, chatID){
 		return
 	} 

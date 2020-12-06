@@ -58,15 +58,15 @@ func (t Telegram) SendAnek(chatID int64, id int) error {
 
 	var likesKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData(strconv.Itoa(database.Get(id).Likes)+" 👍🏻", "l"+strconv.Itoa(id)),
-			tgbotapi.NewInlineKeyboardButtonData(strconv.Itoa(database.Get(id).Dislikes)+" 👎🏾", "d"+strconv.Itoa(id)),
+			tgbotapi.NewInlineKeyboardButtonData(strconv.Itoa(database.arrayOfAneks[id].GetLikes()) + " 👍🏻", "l"+strconv.Itoa(id)),
+			tgbotapi.NewInlineKeyboardButtonData(strconv.Itoa(database.arrayOfAneks[id].GetDislikes()) + " 👎🏾", "d"+strconv.Itoa(id)),
 		),
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("🐖💨🤎", "f"+strconv.Itoa(id)),
 		),
 	)
 
-	msg := tgbotapi.NewMessage(chatID, database.Get(id).Text)
+	msg := tgbotapi.NewMessage(chatID, database.GetAnekText(id))
 	msg.ReplyMarkup = likesKeyboard
 	_, err := t.bot.Send(msg)
 	return err
@@ -85,11 +85,11 @@ func (t *Telegram) GetResponseFromInline(chatID int64, input string, callbackQue
 		if !database.IsDislike(chatID, temp) {
 			database.Dislike(chatID, temp)
 		} else {
-			t.bot.AnswerCallbackQuery(tgbotapi.NewCallback(callbackQuerryID, "Наверное у тебя сахар повышен, раз тебя так разозлил этот анек. Дизлайк уже стоял."))
+			t.bot.AnswerCallbackQuery(tgbotapi.NewCallback(callbackQuerryID, "Ух, какой ты злой. Проверь сахар. Дизлайк уже стоял."))
 		}
 	case 'f':
 		if !database.IsFavourite(chatID, temp) {
-			database.AddToFavourites(chatID, temp)
+			database.Favourite(chatID, temp)
 		} else {
 			t.bot.AnswerCallbackQuery(tgbotapi.NewCallback(callbackQuerryID, "Анек не смешной, а ты его второй раз в избранное добавляешь."))
 		}
@@ -104,9 +104,10 @@ func (t Telegram) CheckUpdates() error {
 
 	for update := range updates {
 		if update.CallbackQuery != nil {
-			t.bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Молодец! Твой палец записан, куда надо."))
 			//t.bot.Send(tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data))
 			t.GetResponseFromInline(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data, update.CallbackQuery.ID)
+
+			t.bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Молодец! Твой палец записан, куда надо."))
 		}
 
 		if update.Message == nil {
@@ -117,8 +118,7 @@ func (t Telegram) CheckUpdates() error {
 	return nil
 }
 
-func (t Telegram) CreateAnswer(input tgbotapi.Message) error {
-	i, err := strconv.Atoi(input.Text)
+func (t Telegram) CreateAnswer(input tgbotapi.Message){
 
 	switch input.Text {
 	
@@ -129,34 +129,42 @@ func (t Telegram) CreateAnswer(input tgbotapi.Message) error {
 		t.SendAnek(input.Chat.ID, rand.Intn(anekQuantity))
 	
 	case "СЛУЧАЙНЫЙ СМЕШНОЙ АНЕК":
-		_, index := database.GetLikedAnek()
-		if index == 0 {
+		textOfAnek, index := database.GetRandomLikedAnek(input.Chat.ID)
+		if textOfAnek == "" {
 			t.SendMessage(input.Chat.ID, "Смешных анеков нет. Можешь посмотреть в зеркало.")
 		}else{
 			t.SendAnek(input.Chat.ID, index)
 		}
 
 	case "СЛУЧАЙНЫЙ НЕСМЕШНОЙ АНЕК":
-		_, index := database.GetDislikedAnek()
-		if index == 0 {
+		textOfAnek, index := database.GetRandomDislikedAnek(input.Chat.ID)
+		if textOfAnek == "" {
 			t.SendMessage(input.Chat.ID, "Несмешных анеков нет. Смейся, любитель похохотать.")
 		}else{
 			t.SendAnek(input.Chat.ID, index)
 		}
 
 	case "СЛУЧАЙНЫЙ ИЗБРАННЫЙ АНЕК":
-		
+		textOfAnek, index := database.GetRandomFavouriteAnek(input.Chat.ID)
+		if textOfAnek == "" {
+			t.SendMessage(input.Chat.ID, "Ты ничего не любишь. Твоё сердце пусто. Обычно такие люди умирают в одиночестве.")
+		}else{
+			t.SendAnek(input.Chat.ID, index)
+		}
 
 	case "СПИСОК ИЗБРАННЫХ АНЕКОВ":
+		temp, _ := database.GetRandomFavouriteAnek(input.Chat.ID)
+		if temp == ""{
+			t.SendMessage(input.Chat.ID, "А вот <3 тебе, а не список.")
+		}
 		t.SendMessage(input.Chat.ID, database.GetStringOfFavourites(input.Chat.ID))
 	
 	default :
-		t.SendMessage(input.Chat.ID, "Ты что, дурачок? Нажимай на кнопки, либо пиши число.")
+		i, err := strconv.Atoi(input.Text)
+		if err == nil{
+			t.SendAnek(input.Chat.ID, i)
+		}else{
+			t.SendMessage(input.Chat.ID, "Ты что, дурачок? Нажимай на кнопки, либо пиши число.")
+		}
 	}
-
-	if err == nil {
-		t.SendAnek(input.Chat.ID, i)
-	}
-
-	return err
 }
