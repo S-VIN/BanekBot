@@ -126,7 +126,7 @@ func (t Telegram) CreateAnswer(input tgbotapi.Message) error {
 		t.SendReplyKeyboard(input.Chat.ID)
 	
 	case "СЛУЧАЙНЫЙ АНЕК":
-		t.SendAnek(input.Chat.ID, rand.Intn(10))
+		t.SendAnek(input.Chat.ID, rand.Intn(anekQuantity))
 	
 	case "СЛУЧАЙНЫЙ СМЕШНОЙ АНЕК":
 		_, index := database.GetLikedAnek()
