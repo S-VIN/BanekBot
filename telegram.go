@@ -62,7 +62,7 @@ func (t Telegram) SendAnek(chatID int64, id int) error {
 			tgbotapi.NewInlineKeyboardButtonData(strconv.Itoa(database.arrayOfAneks[id].GetDislikes()) + " 👎🏾", "d"+strconv.Itoa(id)),
 		),
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("🐖💨🤎", "f"+strconv.Itoa(id)),
+			tgbotapi.NewInlineKeyboardButtonData("🤎", "f"+strconv.Itoa(id)),
 		),
 	)
 
