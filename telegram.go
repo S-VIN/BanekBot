@@ -30,7 +30,7 @@ type Telegram struct {
 }
 
 func (t *Telegram) CreateBot() (err error) {
-	t.bot, err = tgbotapi.NewBotAPI("1241791463:AAGTnqHu_2CMhPFAYTBloCr0tgriOTCHt0M")
+	t.bot, err = tgbotapi.NewBotAPI("1356963581:AAGPlUyAkofdhcehODZ-jvIv9Qu9T196pRQ")
 	if err != nil {
 		return err
 	}
@@ -58,8 +58,8 @@ func (t Telegram) SendAnek(chatID int64, id int) error {
 
 	var likesKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData(strconv.Itoa(database.arrayOfAneks[id].GetLikes()) + " 👍🏻", "l"+strconv.Itoa(id)),
-			tgbotapi.NewInlineKeyboardButtonData(strconv.Itoa(database.arrayOfAneks[id].GetDislikes()) + " 👎🏾", "d"+strconv.Itoa(id)),
+			tgbotapi.NewInlineKeyboardButtonData(strconv.Itoa(database.arrayOfAneks[id].GetLikes())+" 👍🏻", "l"+strconv.Itoa(id)),
+			tgbotapi.NewInlineKeyboardButtonData(strconv.Itoa(database.arrayOfAneks[id].GetDislikes())+" 👎🏾", "d"+strconv.Itoa(id)),
 		),
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("🤎", "f"+strconv.Itoa(id)),
@@ -116,21 +116,21 @@ func (t Telegram) CheckUpdates() error {
 	return nil
 }
 
-func (t Telegram) CreateAnswer(input tgbotapi.Message){
+func (t Telegram) CreateAnswer(input tgbotapi.Message) {
 
 	switch input.Text {
-	
+
 	case "/start":
 		t.SendReplyKeyboard(input.Chat.ID)
-	
+
 	case "СЛУЧАЙНЫЙ АНЕК":
 		t.SendAnek(input.Chat.ID, rand.Intn(anekQuantity))
-	
+
 	case "СЛУЧАЙНЫЙ СМЕШНОЙ АНЕК":
 		textOfAnek, index := database.GetRandomLikedAnek(input.Chat.ID)
 		if textOfAnek == "" {
 			t.SendMessage(input.Chat.ID, "Смешных анеков нет. Можешь посмотреть в зеркало.")
-		}else{
+		} else {
 			t.SendAnek(input.Chat.ID, index)
 		}
 
@@ -138,7 +138,7 @@ func (t Telegram) CreateAnswer(input tgbotapi.Message){
 		textOfAnek, index := database.GetRandomDislikedAnek(input.Chat.ID)
 		if textOfAnek == "" {
 			t.SendMessage(input.Chat.ID, "Несмешных анеков нет. Смейся, любитель похохотать.")
-		}else{
+		} else {
 			t.SendAnek(input.Chat.ID, index)
 		}
 
@@ -146,22 +146,22 @@ func (t Telegram) CreateAnswer(input tgbotapi.Message){
 		textOfAnek, index := database.GetRandomFavouriteAnek(input.Chat.ID)
 		if textOfAnek == "" {
 			t.SendMessage(input.Chat.ID, "Ты ничего не любишь. Твоё сердце пусто. Обычно такие люди умирают в одиночестве.")
-		}else{
+		} else {
 			t.SendAnek(input.Chat.ID, index)
 		}
 
 	case "СПИСОК ИЗБРАННЫХ АНЕКОВ":
 		temp, _ := database.GetRandomFavouriteAnek(input.Chat.ID)
-		if temp == ""{
+		if temp == "" {
 			t.SendMessage(input.Chat.ID, "А вот <3 тебе, а не список.")
 		}
 		t.SendMessage(input.Chat.ID, database.GetStringOfFavourites(input.Chat.ID))
-	
-	default :
+
+	default:
 		i, err := strconv.Atoi(input.Text)
-		if err == nil && i >= 0 && i < anekQuantity{
+		if err == nil && i >= 0 && i < anekQuantity {
 			t.SendAnek(input.Chat.ID, i)
-		}else{
+		} else {
 			t.SendMessage(input.Chat.ID, "Ты что, дурачок? Нажимай на кнопки, либо пиши число. Число должно быть правильным, а не как обычно.")
 		}
 	}
