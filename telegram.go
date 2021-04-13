@@ -30,7 +30,7 @@ type Telegram struct {
 }
 
 func (t *Telegram) CreateBot() (err error) {
-	t.bot, err = tgbotapi.NewBotAPI("1356963581:AAGPlUyAkofdhcehODZ-jvIv9Qu9T196pRQ")
+	t.bot, err = tgbotapi.NewBotAPI("tg api key from bot father")
 	if err != nil {
 		return err
 	}
